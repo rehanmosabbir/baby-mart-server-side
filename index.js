@@ -2,6 +2,7 @@ const express = require("express");
 const app = express();
 const cors = require("cors");
 require("dotenv").config();
+const ObjectId = require("mongodb").ObjectId;
 const { MongoClient } = require("mongodb");
 
 const port = process.env.PORT || 5000;
@@ -22,7 +23,32 @@ async function run() {
   try {
     await client.connect();
     const database = client.db("baby_mart");
-    console.log("database connected successfully");
+    const productCollection = database.collection("products");
+    const orderCollection = database.collection("orders");
+    // console.log("database connected successfully");
+
+    // GET products API
+    app.get("/products", async (req, res) => {
+      const cursor = productCollection.find({});
+      const products = await cursor.toArray();
+      res.send(products);
+    });
+
+    app.get("/products/:id", async (req, res) => {
+      const id = req.params.id;
+      console.log("load user with id: ", id);
+      const query = { _id: ObjectId(id) };
+      const product = await productCollection.findOne(query);
+      res.send(product);
+    });
+
+    // POST order API
+    app.post("/orders", async (req, res) => {
+      const order = req.body;
+      console.log("hitting the post", order);
+      const result = await orderCollection.insertOne(order);
+      res.json(result);
+    });
   } catch {
     //   await client.close();
   }
