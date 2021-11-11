@@ -41,12 +41,56 @@ async function run() {
       const product = await productCollection.findOne(query);
       res.send(product);
     });
+    // GET orders API with matched email
+    app.get("/orders/:email", async (req, res) => {
+      const email = req.params.email;
+      const query = { email: email };
+      const cursor = orderCollection.find(query);
+      const orders = await cursor.toArray();
+      res.send(orders);
+    });
+    // GET all orders API
+    app.get("/orders", async (req, res) => {
+      const cursor = orderCollection.find({});
+      const orders = await cursor.toArray();
+      res.send(orders);
+    });
 
     // POST order API
     app.post("/orders", async (req, res) => {
       const order = req.body;
       console.log("hitting the post", order);
       const result = await orderCollection.insertOne(order);
+      res.json(result);
+    });
+
+    // UPDATE order API
+    app.put("/orders/:id", async (req, res) => {
+      const id = req.params.id;
+      const updatedOrder = req.body;
+      console.log(updatedOrder, id);
+      const filter = { _id: ObjectId(id) };
+      const options = { upsert: true };
+
+      const updateDoc = {
+        $set: {
+          status: updatedOrder.status,
+        },
+      };
+      const result = await orderCollection.updateOne(
+        filter,
+        updateDoc,
+        options
+      );
+      res.json(result);
+    });
+
+    // DELETE order API
+    app.delete("/orders/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: ObjectId(id) };
+      const result = await orderCollection.deleteOne(query);
+      console.log("deleting order with id", id);
       res.json(result);
     });
   } catch {
