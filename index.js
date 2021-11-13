@@ -26,6 +26,7 @@ async function run() {
     const productCollection = database.collection("products");
     const orderCollection = database.collection("orders");
     const usersCollection = database.collection("users");
+    const reviewsCollection = database.collection("reviews");
     // console.log("database connected successfully");
 
     // GET products API
@@ -142,6 +143,21 @@ async function run() {
       const filter = { email: user.email };
       const updateDoc = { $set: { role: "admin" } };
       const result = await usersCollection.updateOne(filter, updateDoc);
+      res.json(result);
+    });
+
+    // GET Review API
+    app.get("/reviews", async (req, res) => {
+      const cursor = reviewsCollection.find({});
+      const reviews = await cursor.toArray();
+      res.send(reviews);
+    });
+
+    // POST Review API
+    app.post("/reviews", async (req, res) => {
+      const review = req.body;
+      console.log("hitting the post", review);
+      const result = await reviewsCollection.insertOne(review);
       res.json(result);
     });
   } catch {
